@@ -1,31 +1,32 @@
 from search import *
-import time
+from time import sleep
 import math
 import tkinter as tk
+import timeit
 
-"""game_map = [
+game_map = [
 "X","T","2","4",
 "X","X","1","X",
 "T","4","X","4",
 "4","3","S","1",
-]"""
+]
 
 """game_map = [
 "S","T","2","4",
 "X","X","1","X",
 "T","4","X","4",
 "4","3","X","1",
-]
-"""
+]"""
 
-game_map = [
+
+"""game_map = [
 "S","T","2","4","2","X",
 "X","X","1","X","1","X",
 "T","4","X","4","X","X",
 "4","3","X","1","3","2",
 "4","3","X","1","3","2",
 "3","4","X","X","X","T",
-]
+]"""
 
 """game_map = [
 "S","T","2","4","2","X","1", "3", "3",
@@ -87,7 +88,7 @@ class TreasureMaze(Problem):
         # find the locations of treasures
         count = 0
         goal = set()
-        for i in initial:
+        for (i,_) in initial:
             if i == "T":
                 goal.add(count)
             count += 1
@@ -188,7 +189,8 @@ class TreasureMaze(Problem):
     def path_cost(self, c, action):
         return c + action[1]
     
-    def h(self, state):
+    def h(self, node):
+        state = node.state
         agent=self.get_agent_location(state)
         positions = list()
         for i in self.goal_calc(state):
@@ -199,12 +201,17 @@ class TreasureMaze(Problem):
         heuristic = []
         for i in positions:
             heuristic.append(abs(i[0] - agent[0])+abs(i[1] - agent[1]))
-        
+        if heuristic == []:
+            return 0
         return min(heuristic)
 
 
 
 problem = TreasureMaze(game_map)
+#print(problem.actions(problem.initial))
+"""node = Node(problem.initial)
+print(node )
+print(problem.h(node))"""
 
 #printState(problem.result(problem.initial, ('R', 1)),4, [])
 """
@@ -248,6 +255,9 @@ print("EXPAND")
 frontier.extend(child for child in node.expand(problem) if tuple(child.state) not in explored and child not in frontier)
 print(frontier)"""
 
+"""________________________________________________"""
+
+
 def depth_first_graph_search(problem):
     """
     [Figure 3.7]
@@ -257,6 +267,8 @@ def depth_first_graph_search(problem):
     Does not get trapped by loops.
     If two paths reach a state, only use the first one.
     """
+    start=timeit.default_timer()
+    iteration=1
     frontier = [(Node(problem.initial))]  # Stack
     explored = set()
     while frontier:
@@ -264,13 +276,14 @@ def depth_first_graph_search(problem):
         """print("\033[92m"+str(node.action) +'\033[0m')
         print(node)"""
         if problem.goal_test(node.state):
-            return node
+            return (timeit.default_timer()-start, iteration, node)
         explored.add(tuple(node.state))
         frontier.extend(
             child
             for child in node.expand(problem)
             if tuple(child.state) not in explored and child not in frontier
         )
+        iteration+=1
         
     return None
 
@@ -280,9 +293,11 @@ def breadth_first_graph_search(problem):
     single line as below:
     return graph_search(problem, FIFOQueue())
     """
+    start=timeit.default_timer()
+    iteration=1
     node = Node(problem.initial)
     if problem.goal_test(node.state):
-        return node
+        return (timeit.default_timer()-start, iteration, node)
     frontier = deque([node])
     explored = set()
     while frontier:
@@ -290,16 +305,78 @@ def breadth_first_graph_search(problem):
         explored.add(tuple(node.state))
         for child in node.expand(problem):
             if tuple(child.state) not in explored and child not in frontier:
-                if problem.goal_test(list(child.state)):
-                    return child
+                if problem.goal_test(child.state):
+                    return (timeit.default_timer()-start, iteration, child)
                 frontier.append(child)
+        iteration += 1
+    
+    return None
+
+def best_first_graph_search(problem, f):
+    """Search the nodes with the lowest f scores first.
+    You specify the function f(node) that you want to minimize; for example,
+    if f is a heuristic estimate to the goal, then we have greedy best
+    first search; if f is node.depth then we have breadth-first search.
+    There is a subtlety: the line "f = memoize(f, 'f')" means that the f
+    values will be cached on the nodes as they are computed. So after doing
+    a best first search you can examine the f values of the path returned."""
+    
+    f = memoize(f, "f")
+    node = Node(problem.initial)
+    frontier = PriorityQueue("min", f) 
+    frontier.append(node)
+    explored = set()
+    start=timeit.default_timer()
+    iteration =0
+    while frontier:
+        node = frontier.pop()
+        if problem.goal_test(node.state):
+            return (timeit.default_timer()-start, iteration, node)
+        
+        explored.add(node)
+        for child in node.expand(problem):
+            if child not in explored and child not in frontier:
+                frontier.append(child)
+            elif child in frontier:
+                if f(child) < frontier[child]:
+                    del frontier[child]
+                    frontier.append(child)
+        iteration+=1
+        
     return None
 
 
+"""________________________________________________"""
 
-node= breadth_first_graph_search(problem)
-node_path = node.path()
-print (node_path)
+def astar_search_graph(problem, h=None):
+    """A* search is best-first graph search with f(n) = g(n)+h(n).
+    You need to specify the h function when you call astar_search, or
+    else in your Problem subclass."""
+    h = memoize(h or problem.h, 'h')
+    (time, iteration, node) = best_first_graph_search(problem, lambda n: n.path_cost + h(n))
+    return (time, iteration, node)
+
+"""________________________________________________"""
+
+
+(time, iterations, node)= depth_first_graph_search(problem)
+print(node)
+print(time)
+print(iterations)
+#print(node)
+(time, iterations, node) = breadth_first_graph_search(problem)
+
+#node_path = node.path()
+#print (node_path)
+print(node)
+print(time)
+print(iterations)
+
+(time, iterations, node) = astar_search_graph(problem)
+
+print(node)
+print(time)
+print(iterations)
 
 
 
@@ -425,7 +502,7 @@ class Game(tk.Frame):
         while self.node_index < len(self.node_path) - 1:
             self.node_index += 1
             self.update_GUI()
-            time.sleep(0.4)
+            sleep(0.4)
         self.cost_label.configure(fg="white")
         self.node_index=0
         self.update_GUI()

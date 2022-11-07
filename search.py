@@ -179,7 +179,8 @@ class Node:
         # stored in the node instead of the node
         # object itself to quickly search a node
         # with the same state in a Hash Table
-        return hash(self.state)
+        #return hash(self.state)
+        return hash(tuple(self.state))
 
 
 # ______________________________________________________________________________
