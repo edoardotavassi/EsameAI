@@ -13,6 +13,10 @@ tensorflow = "*"
 imutils = "*"
 scipy = "*"
 tk = "*"
+pandas = "*"
+sklearn = "*"
+seaborn = "*"
+scikit-learn = "*"
 
 [dev-packages]
 ipykernel = "*"
