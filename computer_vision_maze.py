@@ -152,7 +152,7 @@ class ImageAnalysis :
             #########################################
             """Correct the prediction for the generated image
             due to a font inconsistency between "1" and "T" """
-            if not digital and predictions[0][0] > 0.1:
+            if digital and predictions[0][0] > 0.1:
                 classIndex=[0]
             else:
                 classIndex = np.argmax(predictions, axis=-1)
