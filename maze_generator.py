@@ -70,7 +70,20 @@ class Maze(object):
             else:
                 print(WARNING + "S"+ CLEAN, end=" ")
         print("")
-
+     
+        
+    def testGeneration(self):
+        out = []
+        for i in range(self.matrix_dim):
+            if self.cells[i].state == State.WALL:
+                out.append("X")
+            elif self.cells[i].state == State.PATH:
+                out.append(str(self.cells[i].path_value))
+            elif self.cells[i].state == State.TREASURE:
+                out.append("T")
+            else:
+                out.append("S")
+        return out
 
 class Visualizer(object):
     def __init__(self, maze, media_filename):

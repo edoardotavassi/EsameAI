@@ -22,12 +22,14 @@ class ImageAnalysis :
     
     #utils
     def inside(self, r1, r2):
+        # Return true if r1 is inside r2
         x1, y1, w1, h1 = r1
         x2, y2, w2, h2 = r2
         return (x1 > x2) and (y1 > y2) and (x1 + w1 < x2 + w2) and (y1 + h1 < y2 + h2)
 
 
     def wrap_digit(self, rect, img_w, img_h):
+        # Unpack the rect
         x, y, w, h = rect
         x_center = x + w // 2
         y_center = y + h // 2
@@ -63,9 +65,12 @@ class ImageAnalysis :
         return x, y, w, h
     
     def flatten(self,l):
+        # Flatten a list of lists
         return [item for sublist in l for item in sublist]
 
     def sortBoundingBox(self, rectangles): 
+        # Sort the bounding boxes based on the x and y coordinates
+        # from top left to bottom right
         _,temp,_,_ = rectangles[0]
         tempArr=[]
         outArr=[]
@@ -84,8 +89,8 @@ class ImageAnalysis :
         return flatten(outArr)
     
     def customFloodFill(self, image,seed,color,areaType):
-# Fills connected components of white cells starting at the given point (seed) and returns the area
-# of the filled portion
+    # Fills connected components of white cells starting at the given point (seed) and returns the area
+    # of the filled portion
         q = queue.Queue()
         q.put(seed)
         rows,cols = np.shape(image)
@@ -119,6 +124,7 @@ class ImageAnalysis :
     
     
     def extractOuterGrid(self, img):
+        # Extract the outer grid of the maze
         rows,cols = np.shape(img)
         maxArea = 0
         point = [0,0]
@@ -142,10 +148,12 @@ class ImageAnalysis :
         return img,point
     
     def getDistance(self, p1,p2):
+        # Returns the distance between two points
         return pow(pow((p1[0]-p2[0]),2) + pow((p1[1]-p2[1]),2),0.5)
     
     #####################################################
     def digital_maze_detection(self):
+        # Preprocess the digital image
         img = cv2.imread(self.path,0)
         img = imutils.resize(img, height=500)
         self.imgOriginal = img.copy()
@@ -156,23 +164,28 @@ class ImageAnalysis :
         plt.title("Resized Image")
         plt.show()
         
+        # Binary thresholding is enough for the digital image
         _,threshold = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
         plt.imshow(threshold,cmap='gray', vmin=0, vmax=255)
         plt.title("Threshold Image")
         plt.show()
         
+        #Erode to remove the grid lines
         erode_kernel = np.ones((2, 2), np.uint8)
         threshold = cv2.erode(threshold, erode_kernel, threshold, iterations=2)
         plt.imshow(threshold,cmap='gray', vmin=0, vmax=255)
         plt.title("Eroded Image")
         plt.show()
+        
         return self.detection(threshold, True)
     
     def hand_maze_detection(self):
+        # Preprocess the hand drawn image
         img = cv2.imread(self.path,0)
         img = imutils.resize(img, height=500)
         imgX, imgY = np.shape(img)
         self.imgOriginal = img.copy()
+        # Blur the image to remove noise
         img = cv2.GaussianBlur(img,(11,11),0)
         
         plt.imshow(self.imgOriginal,cmap='gray', vmin=0, vmax=255)
@@ -182,6 +195,7 @@ class ImageAnalysis :
         plt.title('Blurred and Gray Image')
         plt.show()
         
+        # Adaptive thresholding is used to get the best results for the hand drawn image
         img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY_INV,5,2)
         erode_kernel = np.ones((2, 2), np.uint8)
         img = cv2.erode(img, erode_kernel, img, iterations=3)
@@ -200,6 +214,7 @@ class ImageAnalysis :
         plt.title("Dilated Image")
         plt.show()
         
+        # Extract the outer grid of the maze
         self.imgOriginal = img.copy()
         img,point = self.extractOuterGrid(img)
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
@@ -236,10 +251,12 @@ class ImageAnalysis :
         dst = np.array([[0,0],[maxLength-1,0],[0,maxLength-1],[maxLength-1,maxLength-1]])
         h,_ = cv2.findHomography(src,dst)
 
+        # Removes the grid lines
         img,_,_ = self.customFloodFill(self.imgOriginal,[point[0],point[1]],0,0)
         plt.imshow(img, cmap='gray', vmin=0, vmax=255)
         plt.title("No Grid Image")
         plt.show()
+        # Warp the image
         img = cv2.warpPerspective(img,h,(maxLength,maxLength))
 
 
@@ -250,6 +267,7 @@ class ImageAnalysis :
         return self.detection(img, False)
         
     def detection(self, img, digital):
+        # Detetcts the cells values
         outImg = img.copy()
         outImg = cv2.cvtColor(outImg, cv2.COLOR_GRAY2BGR)
         rectangles = []
@@ -257,7 +275,11 @@ class ImageAnalysis :
         outArr=[]
         img_h, img_w = img.shape[:2]
         img_area = img_w * img_h
+        
         for c in contours:
+            
+            # Filters out small contours
+            #not necessary in a digital image due to a constat proportion in the letters
             if not digital:
                 a = cv2.contourArea(c)
                 if a >= 0.98 * img_area or a <= 0.001 * img_area:
@@ -265,6 +287,7 @@ class ImageAnalysis :
 
             r = cv2.boundingRect(c)
             is_inside = False
+            # Filters out contours inside other contours
             for q in rectangles:
                 if self.inside(r, q):
                     is_inside = True
@@ -272,13 +295,14 @@ class ImageAnalysis :
             if not is_inside:
                 rectangles.append(r)
         count = 0
+        
         rectangles = self.sortBoundingBox(rectangles)    
         for r in rectangles:
             count += 1
             x, y, w, h = self.wrap_digit(r, img_w, img_h)
             roi = img[y : y + h, x : x + w].copy()
             
-            #adapt
+            #process the roi
             roi=cv2.bitwise_not(roi)
             roi=cv2.resize(roi, (28,28), interpolation = cv2.INTER_AREA)
 
@@ -289,6 +313,7 @@ class ImageAnalysis :
             roi = cv2.bitwise_not(roi)
             roi = roi.astype("float32")/255
 
+            #correction to make the image fit the model (input expected is an array of images 28x28)
             roi = expand_dims(roi, axis=0)
             predictions = self.model.predict(roi)
             #########################################

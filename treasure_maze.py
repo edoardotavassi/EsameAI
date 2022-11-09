@@ -6,12 +6,12 @@ import timeit
 
 
 #Test Maps
-game_map = [
+"""game_map = [
 "X","T","2","4",
 "X","X","1","X",
 "T","4","X","4",
 "4","3","S","1",
-]
+]"""
 
 """game_map = [
 "S","T","2","4",
@@ -93,7 +93,7 @@ class TreasureMaze(Problem):
         return new_initial
 
     def get_agent_location(self, state):
-        """Return the location of the agent in the given state"""
+        # Return the index of the agent in the state
         count = 0
         for (_, agent_bool) in state:
             if agent_bool:
@@ -102,9 +102,10 @@ class TreasureMaze(Problem):
         return 0
 
     def __init__(self, initial, easy_goal=False, goal_n=0):
-        """Specifica lo stato iniziale, i possibili stati goal
-        e il numero di righe e di colonne della matrice di input di grandezza mxn"""
+        
         self.n = int(math.sqrt(len(initial)))
+        
+        #less goal
         if easy_goal and goal_n < self.goal_number(initial):
             goal = goal_n
         else:
@@ -113,6 +114,8 @@ class TreasureMaze(Problem):
         
 
     def actions(self, state):
+        # Return the actions that can be executed in the given state.
+        # The result is a list in the form of [(action1, cost1),...(actionn, costn)])] 
         agent=self.get_agent_location(state)
         movement = { "L": -1, "R": +1, "U": -self.n, "D": +self.n}
         moves_list = ["L", "R", "U", "D"]
@@ -133,11 +136,13 @@ class TreasureMaze(Problem):
         return actions_list
 
     def result(self, state, action):
+        # Return the state that results from executing the given
+        # action in the given state. The action must be one of
+        # self.actions(state). 
         agent=self.get_agent_location(state)
         new_state = state.copy()
         movement = { "L": -1, "R": +1, "U": -self.n, "D": +self.n}
         action_cell_index = agent + movement[action[0]]
-        #print(str(action_cell_index) + " "+ str(agent))
         
         #Wall
         if new_state[action_cell_index][0] == "X":
@@ -157,6 +162,7 @@ class TreasureMaze(Problem):
         return new_state
 
     def goal_test(self, state):
+        # Return True if the state is a goal.
         count=0
         for (i, _) in state:
             if i == "O":
@@ -167,9 +173,13 @@ class TreasureMaze(Problem):
                 
 
     def path_cost(self, c, action):
+        # Return the cost of a path
         return c + action[1]
     
     def h(self, node):
+        # Return the heuristic value for a given state
+        # Manhattan distance for a multi-goal problem
+        # The distance is calculated from the agent to the closest treasure
         state = node.state
         agent=self.get_agent_location(state)
         positions = list()
@@ -185,63 +195,6 @@ class TreasureMaze(Problem):
             return 0
         return min(heuristic)
 
-problem = TreasureMaze(game_map)
-arr = problem.actions(problem.initial)
-arr2 = []
-print(arr)
-for i in range(0, len(arr)):
-    node = Node(problem.result(problem.initial, arr[i]))
-    print(arr[i])
-    print(problem.h(node))
-
-
-#problem = TreasureMaze(game_map)
-#print(problem.actions(problem.initial))
-"""node = Node(problem.initial)
-print(node )
-print(problem.h(node))"""
-
-#printState(problem.result(problem.initial, ('R', 1)),4, [])
-"""
-print(problem.actions(problem.initial))
-problem.result(problem.initial, ('R', 1))
-print(problem.goal)
-print(problem.goal_test())
-print(problem.path_cost(0, ('R', 1)))"""
-
-
-"""state = problem.initial
-print("Initial state:")
-cost=0
-while not problem.goal_test(state):
-    printState(state, problem.n, problem.goal)
-    print("Costo: " + str(cost))
-    action_list = problem.actions(state)
-    move=action_list[0]
-    h=problem.h(state, move[0])
-    for i in action_list:
-        h2= problem.h(state, i[0])
-        if h>h2:
-            move=i
-            h=h2
-    cost=problem.path_cost(cost, move)
-    state = problem.result(state, move)
-    time.sleep(1)
-printState(state, problem.n, problem.goal)
-print("Costo: " + str(cost))
-"""
-
-
-"""frontier = [Node(problem.initial)]
-print(frontier)
-explored = set()
-node = frontier.pop()
-print(problem.goal_test())
-explored.add(tuple(node.state))
-#print(node.expand(problem))
-print("EXPAND")
-frontier.extend(child for child in node.expand(problem) if tuple(child.state) not in explored and child not in frontier)
-print(frontier)"""
 
 """________________________________________________"""
 
@@ -358,27 +311,6 @@ def astar_search_graph(problem, h=None, display=False):
 
 """________________________________________________"""
 
-"""
-(time, iterations, node)= depth_first_graph_search(problem)
-print(node)
-print(time)
-print(iterations)
-#print(node)
-(time, iterations, node) = breadth_first_graph_search(problem)
-
-#node_path = node.path()
-#print (node_path)
-print(node)
-print(time)
-print(iterations)
-
-(time, iterations, node) = astar_search_graph(problem)
-
-print(node)
-print(time)
-print(iterations)
-"""
-
 
 CELL_COLORS = {
     "1": "#bfff00",
@@ -400,6 +332,7 @@ LETTERS_FONT = ("Helvetica", 55, "bold")
 
 class TreasureGame(tk.Frame):
     def __init__(self, node_path, title, node_index=0):
+        # Initialize the game
         tk.Frame.__init__(self)
         self.grid()
         self.master.title(title)
@@ -419,6 +352,7 @@ class TreasureGame(tk.Frame):
         self.mainloop()
         
     def make_GUI(self):
+        # Make the GUI
         self.cells=[]
         for i in range(self.dimensions):
             row=[]
@@ -448,12 +382,14 @@ class TreasureGame(tk.Frame):
         self.cost_label.grid(row=1)
         
     def read_state(self, node):
+        # Read the state of the game
         for row in range (0,self.dimensions):
             for col in range(0,self.dimensions):
                 self.matrix[row][col] =node.state[row*self.dimensions+col]
         self.cost = node.path_cost
             
     def color_matrix(self):
+        # Colors the cells of the game and add the cost
         for row in range (0,self.dimensions):
             for col in range(0,self.dimensions):
                 if(self.matrix[row][col][1]):
@@ -474,28 +410,34 @@ class TreasureGame(tk.Frame):
         
         
     def start_game(self, node):
+        # Initialize the game state
         self.matrix = [[0] * self.dimensions for _ in range(self.dimensions)]
         self.cost = 0    
         self.read_state(node)
         self.color_matrix()
         
     def update_GUI(self):
+        # Update the GUI
         self.read_state(self.node_path[self.node_index])
         self.color_matrix()
         self.update_idletasks()
         
         
     def left(self, event):
+        # Event for left arrow
         if self.node_index > 0:
             self.node_index -= 1
             self.update_GUI()
         
     def right(self, event):
+        # Event for right arrow
         if self.node_index < len(self.node_path) - 1:
             self.node_index += 1
             self.update_GUI()
             
     def space(self, event):
+        # Event for space
+        # Play the game automatically (animation)
         self.node_index=0
         self.cost_label.configure(fg="red")
         while self.node_index < len(self.node_path) - 1:
@@ -506,11 +448,3 @@ class TreasureGame(tk.Frame):
         self.node_index=0
         self.update_GUI()
             
-
-"""problem = TreasureMaze(game_map)
-(time, iterations, node)= depth_first_graph_search(problem)
-print(node)
-print(time)
-print(iterations)
-#print(node)
-Game(node.path())"""
