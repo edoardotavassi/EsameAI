@@ -207,7 +207,7 @@ class TreasureMaze(Problem):
 
 
 
-problem = TreasureMaze(game_map)
+#problem = TreasureMaze(game_map)
 #print(problem.actions(problem.initial))
 """node = Node(problem.initial)
 print(node )
@@ -358,7 +358,7 @@ def astar_search_graph(problem, h=None):
 
 """________________________________________________"""
 
-
+"""
 (time, iterations, node)= depth_first_graph_search(problem)
 print(node)
 print(time)
@@ -377,7 +377,7 @@ print(iterations)
 print(node)
 print(time)
 print(iterations)
-
+"""
 
 
 
@@ -508,4 +508,4 @@ class Game(tk.Frame):
         self.update_GUI()
             
 
-Game(node_path)
+#Game(node_path)

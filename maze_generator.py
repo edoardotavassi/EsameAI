@@ -55,18 +55,20 @@ class Maze(object):
         OKGREEN = "\033[92m"
         WARNING = "\033[93m"
         OKCYAN = "\033[96m"
+        CLEAN = "\033[0m"
         for i in range(self.matrix_dim):
             if i % (self.side_dim) == 0:
                 print("")
             if self.cells[i].state == State.WALL:
-                print(OKGREEN + "X", end=" ")
+                print(OKGREEN + "X" + CLEAN, end=" ")
             elif self.cells[i].state == State.PATH:
                 print(OKCYAN, end="")
                 print(self.cells[i].path_value, end=" ")
+                print(CLEAN, end="")
             elif self.cells[i].state == State.TREASURE:
-                print(WARNING + "T", end=" ")
+                print(WARNING + "T" + CLEAN, end=" ")
             else:
-                print(WARNING + "S", end=" ")
+                print(WARNING + "S"+ CLEAN, end=" ")
         print("")
 
 
@@ -138,9 +140,10 @@ class Visualizer(object):
         self.image.save(dir + self.media_filename)
 
 
-maze = Maze(5, 5)
+
+"""maze = Maze(5, 5)
 maze.visualize()
 visual = Visualizer(maze, "maze_5")
 visual.generate()
 visual.showImage()
-visual.saveImage("img/")
+#visual.saveImage("img/")"""
