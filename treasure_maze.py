@@ -5,6 +5,7 @@ import tkinter as tk
 import timeit
 
 
+#Test Maps
 game_map = [
 "X","T","2","4",
 "X","X","1","X",
@@ -184,6 +185,14 @@ class TreasureMaze(Problem):
             return 0
         return min(heuristic)
 
+problem = TreasureMaze(game_map)
+arr = problem.actions(problem.initial)
+arr2 = []
+print(arr)
+for i in range(0, len(arr)):
+    node = Node(problem.result(problem.initial, arr[i]))
+    print(arr[i])
+    print(problem.h(node))
 
 
 #problem = TreasureMaze(game_map)
@@ -252,10 +261,11 @@ def depth_first_graph_search(problem):
     explored = set()
     while frontier:
         node = frontier.pop()
-        """print("\033[92m"+str(node.action) +'\033[0m')
-        print(node)"""
+        
+        #Goal test
         if problem.goal_test(node.state):
             return (timeit.default_timer()-start, iteration, node)
+        
         explored.add(tuple(node.state))
         frontier.extend(
             child
@@ -275,9 +285,13 @@ def breadth_first_graph_search(problem):
     start=timeit.default_timer()
     iteration=1
     node = Node(problem.initial)
+    
+    #if the initial state is the goal, return it
     if problem.goal_test(node.state):
         return (timeit.default_timer()-start, iteration, node)
+    
     frontier = deque([node])
+    
     explored = set()
     while frontier:
         node = frontier.popleft()
@@ -291,7 +305,7 @@ def breadth_first_graph_search(problem):
     
     return None
 
-def best_first_graph_search(problem, f):
+def best_first_graph_search(problem, f, display=False):
     """Search the nodes with the lowest f scores first.
     You specify the function f(node) that you want to minimize; for example,
     if f is a heuristic estimate to the goal, then we have greedy best
@@ -310,6 +324,13 @@ def best_first_graph_search(problem, f):
     while frontier:
         node = frontier.pop()
         if problem.goal_test(node.state):
+            if display:
+                print(
+                    len(explored),
+                    "paths have been expanded and",
+                    len(frontier),
+                    "paths remain in the frontier",
+                )
             return (timeit.default_timer()-start, iteration, node)
         
         explored.add(node)
@@ -327,12 +348,12 @@ def best_first_graph_search(problem, f):
 
 """________________________________________________"""
 
-def astar_search_graph(problem, h=None):
+def astar_search_graph(problem, h=None, display=False):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
     h = memoize(h or problem.h, 'h')
-    (time, iteration, node) = best_first_graph_search(problem, lambda n: n.path_cost + h(n))
+    (time, iteration, node) = best_first_graph_search(problem, lambda n: n.path_cost + h(n), display)
     return (time, iteration, node)
 
 """________________________________________________"""
@@ -357,7 +378,6 @@ print(node)
 print(time)
 print(iterations)
 """
-
 
 
 CELL_COLORS = {

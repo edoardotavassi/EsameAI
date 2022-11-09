@@ -8,6 +8,7 @@ map = []
 print("Vuoi generare un labirinto casuale o caricare un labirinto da file?")
 print("1. Genera labirinto casuale")
 print("2. Carica labirinto da file")
+print("3. Carica l'ultimo labirinto generato")
 maze_type = input("Scelta: ")
 if maze_type == "1":
     if os.path.exists("./img/maze.jpg"):
@@ -34,7 +35,14 @@ if maze_type == "1":
     map = analyzer.digital_maze_detection()
     
 elif maze_type == "2":
-    exit()
+    print("Inserisci il nome del file (senza estensione)")
+    string = "./img/" + input("Nome: ") + ".jpg"
+    analyzer = cvm.ImageAnalysis(string)
+    map = analyzer.hand_maze_detection()
+
+elif maze_type == "3":
+    analyzer = cvm.ImageAnalysis("./img/maze.jpg")
+    map = analyzer.digital_maze_detection()
 else:
     exit()
     
@@ -63,7 +71,7 @@ while choice<1 or choice>3:
 if choice == 1:
     print("Algoritmo A*")
     title ="A*"
-    (time, iterations, node)= tm.astar_search_graph(problem)
+    (time, iterations, node)= tm.astar_search_graph(problem, display=True)
 elif choice == 2:
     print("Algoritmo BFS")
     title ="Breath First Search"
@@ -79,4 +87,5 @@ print(node_path)
 print("Tempo di esecuzione: ", time, end="")
 print(" s")
 print("Numero di iterazioni: ", iterations)
+print("")
 tm.TreasureGame(node_path, title)
