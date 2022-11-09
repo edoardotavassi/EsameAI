@@ -4,6 +4,7 @@ import math
 import tkinter as tk
 import timeit
 
+
 game_map = [
 "X","T","2","4",
 "X","X","1","X",
@@ -40,28 +41,6 @@ game_map = [
 "T","4","X","4","X","X","1", "2", "1"
 ]"""
 
-
-
-
-def printState(state, goal):
-    n = int(math.sqrt(len(state)))
-    print("------------------")
-    count =1
-    for i in state:
-        if i[1]:
-            print("\033[92m", end="")
-            print(i, end=" ")
-            print('\033[0m', end="")
-        else:
-            print(i, end=" ")
-        if count == n:
-            print("\n")
-            count = 0
-        count +=1
-    print("GOAL: ", end="")
-    print(goal)
-    print("------------------")
-    
 
 
 class TreasureMaze(Problem):
@@ -399,11 +378,11 @@ GRID_COLOR = "#000000"
 
 LETTERS_FONT = ("Helvetica", 55, "bold")
 
-class Game(tk.Frame):
-    def __init__(self, node_path, node_index=0):
+class TreasureGame(tk.Frame):
+    def __init__(self, node_path, title, node_index=0):
         tk.Frame.__init__(self)
         self.grid()
-        self.master.title("Treasure Maze")
+        self.master.title(title)
         self.node_path=node_path
         self.node_index=node_index
         self.dimensions= int(math.sqrt(len(self.node_path[0].state)))
@@ -508,4 +487,10 @@ class Game(tk.Frame):
         self.update_GUI()
             
 
-#Game(node_path)
+"""problem = TreasureMaze(game_map)
+(time, iterations, node)= depth_first_graph_search(problem)
+print(node)
+print(time)
+print(iterations)
+#print(node)
+Game(node.path())"""

@@ -10,7 +10,8 @@ import os
 from tensorflow import expand_dims
 from tensorflow.keras.models import load_model
 
-
+import matplotlib
+matplotlib.use("TkAgg")
 pathImage = "./img/maze_4.jpg"
 
 class ImageAnalysis :

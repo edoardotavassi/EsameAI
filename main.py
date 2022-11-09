@@ -38,8 +38,15 @@ elif maze_type == "2":
 else:
     exit()
     
-    
-problem = tm.TreasureMaze(map)
+
+print("Quanti tesori vuoi trovare?")
+print("Scrivi 0 per trovarli tutti")
+choice = int(input("Scelta: "))
+if choice == 0:
+    problem = tm.TreasureMaze(map)
+else:
+    problem = tm.TreasureMaze(map, True, choice)
+
 
 print("Quale algoritmo vuoi utilizzare?")
 print("1. A*")
@@ -55,15 +62,21 @@ while choice<1 or choice>3:
     
 if choice == 1:
     print("Algoritmo A*")
+    title ="A*"
+    (time, iterations, node)= tm.astar_search_graph(problem)
 elif choice == 2:
     print("Algoritmo BFS")
+    title ="Breath First Search"
+    (time, iterations, node)= tm.breadth_first_graph_search(problem)
 elif choice == 3:  
     print("Algoritmo DFS")
+    title ="Depth First Search"
     (time, iterations, node)= tm.depth_first_graph_search(problem)
     
 
 node_path = node.path()
 print(node_path)
-print("Tempo di esecuzione: ", time)
+print("Tempo di esecuzione: ", time, end="")
+print(" s")
 print("Numero di iterazioni: ", iterations)
-tm.Game(node_path)
+tm.TreasureGame(node_path, title)

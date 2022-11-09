@@ -138,12 +138,3 @@ class Visualizer(object):
 
     def saveImage(self, dir):
         self.image.save(dir + self.media_filename)
-
-
-
-"""maze = Maze(5, 5)
-maze.visualize()
-visual = Visualizer(maze, "maze_5")
-visual.generate()
-visual.showImage()
-#visual.saveImage("img/")"""
